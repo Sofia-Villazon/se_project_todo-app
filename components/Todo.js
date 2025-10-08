@@ -40,7 +40,6 @@ class Todo {
       .querySelector(".todo")
       .cloneNode(true);
 
-    //   could use config to replace all bellow
     const todoNameEl = this._todoElement.querySelector(".todo__name");
     this._todoDate = this._todoElement.querySelector(".todo__date");
     this._todoDeleteBtn = this._todoElement.querySelector(".todo__delete-btn");
