@@ -10,12 +10,23 @@ const addTodoForm = addTodoPopup.querySelector(".popup__form");
 const addTodoCloseBtn = addTodoPopup.querySelector(".popup__close");
 const todosList = document.querySelector(".todos__list");
 
+function closeOnEscape(evt) {
+  if (evt.key === "Escape" || evt.keyCode === 27) {
+    const openedModal = document.querySelector(".popup_visible");
+    if (openedModal) {
+      closeModal(openedModal);
+    }
+  }
+}
+
 const openModal = (modal) => {
   modal.classList.add("popup_visible");
+  document.addEventListener("keydown", closeOnEscape);
 };
 
 const closeModal = (modal) => {
   modal.classList.remove("popup_visible");
+  document.removeEventListener("keyup", closeOnEscape);
 };
 
 // The logic in this function should all be handled in the Todo class.
