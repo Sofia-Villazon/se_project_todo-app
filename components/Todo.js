@@ -1,16 +1,22 @@
 class Todo {
-  constructor(data, selector) {
+  constructor(data, selector, handleCheck, handleDelete, updateTotal) {
     this._data = data;
+    this._completed = this._data.completed;
     this._templateElement = document.querySelector(selector);
+    this._handleCheck = handleCheck;
+    this._handleDelete = handleDelete;
+    this._updateTotal = updateTotal;
   }
 
   _setEventListeners() {
-    this._todoCheckboxEl.addEventListener("change", () => {
-      this._data.completed = !this._data.completed;
-    });
-
     this._todoDeleteBtn.addEventListener("click", () => {
-      this._todoElement.remove();
+      this._handleDelete(this._completed);
+      this._updateTotal(true);
+      this._toggleDelete();
+    });
+    this._todoCheckboxEl.addEventListener("change", () => {
+      this._toggleCompletion();
+      this._handleCheck(this._completed);
     });
   }
 
@@ -23,6 +29,14 @@ class Todo {
     this._todoCheckboxEl.id = `todo-${this._data.id}`;
     todoLabel.setAttribute("for", `todo-${this._data.id}`);
   }
+
+  _toggleCompletion = () => {
+    this._completed = !this._completed;
+  };
+
+  _toggleDelete = () => {
+    this._todoElement.remove();
+  };
 
   _generateDate() {
     const dueDate = new Date(this._data.date);

@@ -1,76 +1,94 @@
 import { v4 as uuidv4 } from "https://jspm.dev/uuid";
 
-import { initialTodos, validationConfig } from "../utils/constants.js";
+import {
+  initialTodos,
+  validationConfig,
+  addTodoButton,
+  addTodoForm,
+} from "../utils/constants.js";
 import Todo from "../components/Todo.js";
 import FormValidator from "../components/FormValidator.js";
+import Section from "../components/Section.js";
+import PopupWithForm from "../components/PopupWithForm.js";
+import TodoCounter from "../components/TodoCounter.js";
 
-const addTodoButton = document.querySelector(".button_action_add");
-const addTodoPopup = document.querySelector("#add-todo-popup");
-const addTodoForm = addTodoPopup.querySelector(".popup__form");
-const addTodoCloseBtn = addTodoPopup.querySelector(".popup__close");
-const todosList = document.querySelector(".todos__list");
+const counter = new TodoCounter(initialTodos, ".counter__text");
 
-function closeOnEscape(evt) {
-  if (evt.key === "Escape" || evt.keyCode === 27) {
-    const openedModal = document.querySelector(".popup_visible");
-    if (openedModal) {
-      closeModal(openedModal);
-    }
+function handleCheck(completed) {
+  counter.updateCompleted(completed);
+}
+
+function handleDelete(completed) {
+  if (completed) {
+    counter.updateCompleted(false);
   }
 }
 
-const openModal = (modal) => {
-  modal.classList.add("popup_visible");
-  document.addEventListener("keydown", closeOnEscape);
-};
-
-const closeModal = (modal) => {
-  modal.classList.remove("popup_visible");
-  document.removeEventListener("keyup", closeOnEscape);
-};
-
-// The logic in this function should all be handled in the Todo class.
-
-const generateTodo = (data) => {
-  const newTodo = new Todo(data, "#todo-template");
-  const todoElement = newTodo.getView();
-
-  return todoElement;
-};
-
-addTodoButton.addEventListener("click", () => {
-  openModal(addTodoPopup);
-});
-
-addTodoCloseBtn.addEventListener("click", () => {
-  closeModal(addTodoPopup);
-});
-
-function addTodo(data) {
-  const todo = generateTodo(data);
-  todosList.append(todo);
+function updateTotal(complete) {
+  if (complete) {
+    counter.updateTotal(false);
+  } else {
+    counter.updateTotal(true);
+  }
 }
 
-addTodoForm.addEventListener("submit", (evt) => {
-  evt.preventDefault();
-  const name = evt.target.name.value;
-  const dateInput = evt.target.date.value;
-
-  // Create a date object and adjust for timezone
-  const date = new Date(dateInput);
-  date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-
-  const id = uuidv4();
-
-  const values = { name, date, id };
-  addTodo(values);
-  closeModal(addTodoPopup);
-  newTodoValidator.resetValidation();
+addTodoButton.addEventListener("click", () => {
+  addTodoPopup.open();
 });
 
-initialTodos.forEach((item) => {
-  addTodo(item);
+const defaultTodo = new Section({
+  items: initialTodos,
+  renderer: (item) => {
+    const newTodo = new Todo(
+      item,
+      "#todo-template",
+      handleCheck,
+      handleDelete,
+      updateTotal
+    );
+    const todoElement = newTodo.getView();
+    defaultTodo.addItem(todoElement);
+  },
+  containerSelector: ".todos__list",
 });
+
+defaultTodo.renderItems();
+
+const addTodoPopup = new PopupWithForm(
+  {
+    popupSelector: "#add-todo-popup",
+    handleFormSubmit: (inputValues) => {
+      const id = uuidv4();
+      const name = inputValues.name;
+      const date = inputValues.date;
+
+      inputValues = { name, date, id };
+
+      const customTodo = new Section({
+        items: inputValues,
+        renderer: () => {
+          const newTodo = new Todo(
+            inputValues,
+            "#todo-template",
+            handleCheck,
+            handleDelete,
+            updateTotal
+          );
+          const todoElement = newTodo.getView();
+          customTodo.addItem(todoElement);
+        },
+        containerSelector: ".todos__list",
+      });
+
+      customTodo._renderer();
+
+      newTodoValidator.resetValidation();
+    },
+  },
+  updateTotal
+);
+
+addTodoPopup.setEventListeners();
 
 const newTodoValidator = new FormValidator(validationConfig, addTodoForm);
 newTodoValidator.enableValidation();
