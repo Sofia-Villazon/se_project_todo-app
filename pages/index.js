@@ -49,7 +49,7 @@ const defaultTodo = new Section({
     const todoElement = newTodo.getView();
     defaultTodo.addItem(todoElement);
   },
-  containerSelector: ".todos__list",
+  container: ".todos__list",
 });
 
 defaultTodo.renderItems();
@@ -62,27 +62,20 @@ const addTodoPopup = new PopupWithForm(
       const name = inputValues.name;
       const date = inputValues.date;
 
-      inputValues = { name, date, id };
+      const todoData = { name, date, id };
 
-      const customTodo = new Section({
-        items: inputValues,
-        renderer: () => {
-          const newTodo = new Todo(
-            inputValues,
-            "#todo-template",
-            handleCheck,
-            handleDelete,
-            updateTotal
-          );
-          const todoElement = newTodo.getView();
-          customTodo.addItem(todoElement);
-        },
-        containerSelector: ".todos__list",
-      });
-
-      customTodo._renderer();
+      const newTodo = new Todo(
+        todoData,
+        "#todo-template",
+        handleCheck,
+        handleDelete,
+        updateTotal
+      );
+      const todoElement = newTodo.getView();
+      defaultTodo.addItem(todoElement);
 
       newTodoValidator.resetValidation();
+      updateTotal(false);
     },
   },
   updateTotal
